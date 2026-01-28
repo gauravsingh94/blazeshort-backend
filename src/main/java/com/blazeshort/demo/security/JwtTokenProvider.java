@@ -1,5 +1,6 @@
 package com.blazeshort.demo.security;
 
+import com.blazeshort.demo.model.enums.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.stereotype.Component;
@@ -13,7 +14,7 @@ public class JwtTokenProvider {
     // generate a strong secret key
     private final SecretKey secretKey = Jwts.SIG.HS256.key().build();
 
-    public String generateToken(Long userId, String role) {
+    public String generateToken(Long userId, Role role) {
         // 24h
         long EXPIRATION = 1000 * 60 * 60 * 24;
         return Jwts.builder()
