@@ -45,7 +45,7 @@ public class UrlController {
         ShortUrl url = shortUrlService.getAndValidate(code);
         response.sendRedirect(url.getOriginalUrl());
     }
-
+    @GetMapping("/url/my")
     public List<ShortenResponse> myUrls() {
 
         Long userId = Long.parseLong(
