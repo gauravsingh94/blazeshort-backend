@@ -1,6 +1,5 @@
 package com.blazeshort.demo.controller;
 
-import com.blazeshort.demo.config.SecurityConfig;
 import com.blazeshort.demo.model.dto.ShortenRequest;
 import com.blazeshort.demo.model.dto.ShortenResponse;
 import com.blazeshort.demo.model.entity.ShortUrl;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.DoubleStream;
 
 @RestController
 @RequiredArgsConstructor
@@ -42,8 +40,8 @@ public class UrlController {
     public void redirect(@PathVariable String code,
                          HttpServletResponse response) throws IOException {
 
-        ShortUrl url = shortUrlService.getAndValidate(code);
-        response.sendRedirect(url.getOriginalUrl());
+        String  originalUrl= shortUrlService.getOriginalUrl(code);
+        response.sendRedirect(originalUrl);
     }
     @GetMapping("/url/my")
     public List<ShortenResponse> myUrls() {
