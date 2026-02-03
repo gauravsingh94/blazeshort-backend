@@ -20,7 +20,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, RateLimitFilter rateLimitFilter) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
@@ -28,7 +28,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/**").hasRole("USER")
                         .anyRequest().permitAll()
-                )
+                ).addFilterBefore(rateLimitFilter,UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore( jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class);
 
