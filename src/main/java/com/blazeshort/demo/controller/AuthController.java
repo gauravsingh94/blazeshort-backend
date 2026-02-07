@@ -15,12 +15,14 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private JwtTokenProvider tokenProvider;
-    @Autowired
-    private BCryptPasswordEncoder encoder;
+    private final UserRepository userRepository;
+    private final JwtTokenProvider tokenProvider;
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+    public AuthController(JwtTokenProvider tokenProvider, UserRepository userRepository) {
+        this.tokenProvider = tokenProvider;
+        this.userRepository = userRepository;
+    }
 
     @PostMapping("/signup")
     public ResponseEntity<?>signup(@RequestBody SignupRequest request){
@@ -29,7 +31,7 @@ public class AuthController {
         }
         User user = new User();
         user.setEmail(request.getEmail());
-        user.setPassword(encoder.encode(request.getPassword()));
+        user.setPassword(new BCryptPasswordEncoder().encode(request.getPassword()));
         user.setRole(request.getRole());
         userRepository.save(user);
         return ResponseEntity.ok(Map.of("message","User registered successfully"));
