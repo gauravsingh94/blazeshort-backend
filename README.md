@@ -12,6 +12,7 @@ A production-ready URL shortener backend built with Spring Boot, PostgreSQL, and
 
 🧠 Architecture Overview
 
+```
 Client
   ↓
 Spring Boot API
@@ -24,7 +25,7 @@ Spring Boot API
         ├── Rate limiting counters
         ├── Redirect cache
         └── Health checks
-
+```
 
 ⸻
 
@@ -72,6 +73,7 @@ Container	Docker, Docker Compose
 
 📁 Project Structure
 
+```
 blazeshort-backend
 │
 ├── src/main/java/com/blazeshort/demo
@@ -112,6 +114,8 @@ blazeshort-backend
 ├── .dockerignore
 └── README.md
 
+``` 
+
 
 ⸻
 
@@ -138,6 +142,7 @@ redirect_rate:192.168.1.10
 
 🧩 Code (simplified)
 
+```
 public boolean isAllowed(String key, int limit, int windowSec) {
     Long count = redisTemplate.opsForValue().increment(key);
     if (count == 1) {
@@ -145,9 +150,11 @@ public boolean isAllowed(String key, int limit, int windowSec) {
     }
     return count <= limit;
 }
+```
 
 📍 Applied At
 
+```
 @GetMapping("/{code}")
 public void redirect(...) {
     if (!rateLimitService.isAllowed(...)) {
@@ -155,7 +162,7 @@ public void redirect(...) {
     }
     response.sendRedirect(originalUrl);
 }
-
+```
 
 ⸻
 
@@ -173,12 +180,14 @@ Every successful redirect
 
 📦 Entity
 
+```
 UrlAnalytics {
   ipAddress
   userAgent
   createdAt
   shortUrl
 }
+```
 
 🔄 Flow
 
@@ -225,6 +234,7 @@ Redis	6379
 
 4️⃣ docker-compose.yml (overview)
 
+```
 services:
   app:
     build: .
@@ -243,7 +253,7 @@ services:
     image: redis:7
     ports:
       - "6379:6379"
-
+```
 
 ⸻
 
@@ -264,25 +274,31 @@ redis-server
 
 4️⃣ application.properties
 
+```
 spring.datasource.url=jdbc:postgresql://localhost:5432/blazeshort
 spring.datasource.username=myuser
 spring.datasource.password=mypassword
 
 spring.data.redis.host=localhost
 spring.data.redis.port=6379
+```
 
 5️⃣ Run App
 
+```
 mvn spring-boot:run
+```
 
 
 ⸻
 
 🧪 Testing Rate Limiting
 
+```
 for i in {1..20}; do
   curl -I http://localhost:8080/abc123
 done
+```
 
 Expected:
 
