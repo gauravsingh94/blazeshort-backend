@@ -29,11 +29,11 @@ public class DashboardService {
                 .shortCode(shortCode)
                 .totalClicks(analyticsRepository.countByShortUrl(url))
                 .uniqueClicks(analyticsRepository.countUniqueClicks(url))
-                .clicksPerDay(analyticsRepository.clicksPerDay(url))
+                .clicksPerDay(analyticsRepository.getDailyClicks(url))
                 .topIps(analyticsRepository.topIps(url))
                 .topUserAgents(analyticsRepository.topUserAgents(url))
                 .recentClicks(
-                        analyticsRepository.findTop10ByShortUrlOrderByClickedAtDesc(url)
+                        analyticsRepository.findTop10ByShortUrlOrderByCreatedAtDesc(url)
                                 .stream()
                                 .map(a -> new RecentClick(
                                         a.getIpAddress(),
