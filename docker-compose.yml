@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: blazeshort-postgres
+    environment:
+      POSTGRES_DB: blazeshort
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: blazeshort-redis
+    ports:
+      - "6380:6379"
+
+  backend:
+    build: .
+    container_name: blazeshort-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/blazeshort
+      SPRING_DATASOURCE_USERNAME: myuser
+      SPRING_DATASOURCE_PASSWORD: mypassword
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+
+volumes:
+  pgdata:
