@@ -1,5 +1,6 @@
 package com.blazeshort.demo.service;
 
+import com.blazeshort.demo.exception.UrlDisabledException;
 import com.blazeshort.demo.exception.UrlExpiredException;
 import com.blazeshort.demo.model.dto.ShortenRequest;
 import com.blazeshort.demo.model.entity.ShortUrl;
@@ -41,7 +42,7 @@ public class ShortUrlService {
     public ShortUrl getAndValidate(String code){
         ShortUrl url = shortUrlRepository.findByShortCode(code).orElseThrow(()-> new RuntimeException("Url not found"));
         if(url.getStatus() != UrlStatus.ACTIVE){
-            throw new UrlExpiredException("Url is disabled");
+            throw new UrlDisabledException("Url is disabled");
         }
         if(url.getExpiresAt()!=null && url.getExpiresAt().isBefore(LocalDateTime.now())){
             throw new UrlExpiredException("Url is expired");
