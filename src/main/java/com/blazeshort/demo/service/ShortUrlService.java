@@ -2,12 +2,14 @@ package com.blazeshort.demo.service;
 
 import com.blazeshort.demo.exception.UrlDisabledException;
 import com.blazeshort.demo.exception.UrlExpiredException;
+import com.blazeshort.demo.exception.UrlNotFoundException;
 import com.blazeshort.demo.model.dto.ShortenRequest;
 import com.blazeshort.demo.model.entity.ShortUrl;
 import com.blazeshort.demo.model.entity.User;
 import com.blazeshort.demo.model.enums.UrlStatus;
 import com.blazeshort.demo.repository.ShortUrlRepository;
 import com.blazeshort.demo.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +42,7 @@ public class ShortUrlService {
     }
 
     public ShortUrl getAndValidate(String code){
-        ShortUrl url = shortUrlRepository.findByShortCode(code).orElseThrow(()-> new RuntimeException("Url not found"));
+        ShortUrl url = shortUrlRepository.findByShortCode(code).orElseThrow(()-> new UrlNotFoundException("Url not found"));
         if(url.getStatus() != UrlStatus.ACTIVE){
             throw new UrlDisabledException("Url is disabled");
         }
@@ -74,5 +76,13 @@ public class ShortUrlService {
     public List<ShortUrl> getUserUrls(Long userId){
         User user = userRepository.findById(userId).orElseThrow(()-> new RuntimeException("User not found"));
         return shortUrlRepository.findAllByUser(user);
+    }
+
+    @Transactional
+    public void updateStatus(String code, UrlStatus status) {
+        ShortUrl url = shortUrlRepository.findByShortCode(code)
+                .orElseThrow(() -> new UrlNotFoundException("Url not found"));
+
+        url.setStatus(status);
     }
 }
