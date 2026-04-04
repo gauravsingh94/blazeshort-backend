@@ -18,7 +18,7 @@ public class DashboardService {
             String shortCode,
             Long userId
     ) {
-        ShortUrl url = shortUrlRepository.findByShortCode(shortCode)
+        ShortUrl url = shortUrlRepository.findByShortCodeAndUserId(shortCode,userId)
                 .orElseThrow(() -> new RuntimeException("URL not found"));
 
         if (!url.getUser().getId().equals(userId)) {

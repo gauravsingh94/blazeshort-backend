@@ -19,7 +19,7 @@ public class JwtTokenProvider {
         long EXPIRATION = 1000 * 60 * 60 * 24;
         return Jwts.builder()
                 .subject(String.valueOf(userId))
-                .claim("role", role)
+                .claim("role", role.name())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(secretKey)

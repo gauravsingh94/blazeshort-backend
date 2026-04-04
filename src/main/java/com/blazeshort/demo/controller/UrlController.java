@@ -9,6 +9,7 @@ import com.blazeshort.demo.model.entity.UrlAnalytics;
 import com.blazeshort.demo.repository.UrlAnalyticsRepository;
 import com.blazeshort.demo.service.RateLimitService;
 import com.blazeshort.demo.service.ShortUrlService;
+import com.blazeshort.demo.util.SecurityUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -29,11 +30,7 @@ public class UrlController {
 
     @PostMapping("/api/url")
     public ShortenResponse create(@RequestBody ShortenRequest request){
-        Long userId = Long.parseLong(
-                SecurityContextHolder.getContext()
-                        .getAuthentication()
-                        .getName()
-        );
+        Long userId = SecurityUtils.getCurrentUserId();
 
         String key = "rl:create:" + userId;
 
@@ -61,6 +58,7 @@ public class UrlController {
                          HttpServletResponse response) throws IOException {
         String ip = request.getRemoteAddr();
         String key = "redirect_rate:" + ip;
+        Long userId = SecurityUtils.getCurrentUserId();
 
         if (!rateLimitService.isAllowed(
                 key,
@@ -71,7 +69,7 @@ public class UrlController {
         }
 
         // 2️⃣ Fetch short URL (single DB hit)
-        ShortUrl shortUrl = shortUrlService.getAndValidate(code);
+        ShortUrl shortUrl = shortUrlService.getAndValidate(code,userId);
 
         // 3️⃣ Save analytics (WRITE)
         UrlAnalytics analytics = UrlAnalytics.builder()
@@ -84,18 +82,14 @@ public class UrlController {
         urlAnalyticsRepository.save(analytics);
 
 
-        String  originalUrl= shortUrlService.getOriginalUrl(code);
+        String  originalUrl= shortUrlService.getOriginalUrl(code,userId);
         response.sendRedirect(originalUrl);
     }
 
     @GetMapping("/url/my")
     public List<ShortenResponse> myUrls() {
 
-        Long userId = Long.parseLong(
-                SecurityContextHolder.getContext()
-                        .getAuthentication()
-                        .getName()
-        );
+        Long userId = SecurityUtils.getCurrentUserId();
 
         return shortUrlService.getUserUrls(userId)
                 .stream()

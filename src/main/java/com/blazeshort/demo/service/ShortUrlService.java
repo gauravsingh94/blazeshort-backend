@@ -41,8 +41,8 @@ public class ShortUrlService {
         return savedUrl;
     }
 
-    public ShortUrl getAndValidate(String code){
-        ShortUrl url = shortUrlRepository.findByShortCode(code).orElseThrow(()-> new UrlNotFoundException("Url not found"));
+    public ShortUrl getAndValidate(String code,long userId){
+        ShortUrl url = shortUrlRepository.findByShortCodeAndUserId(code,userId).orElseThrow(()-> new UrlNotFoundException("Url not found"));
         if(url.getStatus() != UrlStatus.ACTIVE){
             throw new UrlDisabledException("Url is disabled");
         }
@@ -52,7 +52,7 @@ public class ShortUrlService {
         return url;
     }
 
-    public String getOriginalUrl(String code) {
+    public String getOriginalUrl(String code,long userId) {
 
         // 1️⃣ Try Redis first
         String cachedUrl = redisCacheService.get(code);
@@ -61,7 +61,7 @@ public class ShortUrlService {
         }
 
         // 2️⃣ Fallback to DB
-        ShortUrl url = getAndValidate(code);
+        ShortUrl url = getAndValidate(code,userId);
 
         // 3️⃣ Cache again
         redisCacheService.add(
@@ -79,10 +79,17 @@ public class ShortUrlService {
     }
 
     @Transactional
-    public void updateStatus(String code, UrlStatus status) {
-        ShortUrl url = shortUrlRepository.findByShortCode(code)
+    public void updateStatus(String code, UrlStatus status, Long userId) {
+        ShortUrl url = shortUrlRepository.findByShortCodeAndUserId(code,userId)
                 .orElseThrow(() -> new UrlNotFoundException("Url not found"));
 
         url.setStatus(status);
+    }
+    @Transactional
+    public void deleteByShortCode(String shortCode,Long userId) {
+        ShortUrl url = shortUrlRepository.findByShortCodeAndUserId(shortCode,userId).orElseThrow(()-> new UrlNotFoundException("Url not found"));
+        shortUrlRepository.deleteByShortCode(url.getShortCode());
+        // Keep cache consistent with DB delete
+        redisCacheService.remove(shortCode);
     }
 }

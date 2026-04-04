@@ -2,6 +2,7 @@ package com.blazeshort.demo.controller;
 
 import com.blazeshort.demo.model.dto.DashboardAnalyticsResponse;
 import com.blazeshort.demo.service.DashboardService;
+import com.blazeshort.demo.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,11 +19,7 @@ public class DashboardController {
     @GetMapping("/analytics/{code}")
     public DashboardAnalyticsResponse analytics(@PathVariable String code) {
 
-        Long userId = Long.parseLong(
-                SecurityContextHolder.getContext()
-                        .getAuthentication()
-                        .getName()
-        );
+        Long userId = SecurityUtils.getCurrentUserId();
         return dashboardService.getDashboardAnalytics(code, userId);
     }
 }
