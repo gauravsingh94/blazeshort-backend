@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ShortUrlRepository extends JpaRepository<ShortUrl, Long> {
-    Optional<ShortUrl> findByShortCodeAndUserId(String shortCode, Long userId);
+    Optional<ShortUrl> findByShortCode(String shortCode);
     List<ShortUrl> findAllByUser(User user);
     boolean existsByShortCode(String shortCode);
     void deleteByShortCode(String shortCode);
