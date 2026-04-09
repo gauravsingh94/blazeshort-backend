@@ -1,8 +1,11 @@
 package com.blazeshort.demo.service;
 
 import com.blazeshort.demo.model.dto.DashboardAnalyticsResponse;
+import com.blazeshort.demo.model.dto.OverallDashboardAnalyticsResponse;
 import com.blazeshort.demo.model.dto.RecentClick;
 import com.blazeshort.demo.model.entity.ShortUrl;
+import com.blazeshort.demo.model.entity.User;
+import com.blazeshort.demo.model.enums.UrlStatus;
 import com.blazeshort.demo.repository.ShortUrlRepository;
 import com.blazeshort.demo.repository.UrlAnalyticsRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +37,52 @@ public class DashboardService {
                 .topUserAgents(analyticsRepository.topUserAgents(url))
                 .recentClicks(
                         analyticsRepository.findTop10ByShortUrlOrderByCreatedAtDesc(url)
+                                .stream()
+                                .map(a -> new RecentClick(
+                                        a.getIpAddress(),
+                                        a.getUserAgent(),
+                                        a.getCreatedAt()
+                                ))
+                                .toList()
+                )
+                .build();
+    }
+
+    public OverallDashboardAnalyticsResponse getOverallDashboardAnalytics(Long userId) {
+        // Get all URLs for the user
+        User user = User.builder().id(userId).build();
+        var allUrls = shortUrlRepository.findAllByUser(user);
+
+        // Count different URL statuses
+        long totalUrls = allUrls.size();
+        long activeUrls = allUrls.stream()
+                .filter(url -> url.getStatus() == UrlStatus.ACTIVE)
+                .count();
+        long expiredUrls = allUrls.stream()
+                .filter(url -> url.getStatus() == UrlStatus.EXPIRED)
+                .count();
+        long disabledUrls = allUrls.stream()
+                .filter(url -> url.getStatus() == UrlStatus.DISABLED)
+                .count();
+
+        // Get total clicks
+        long totalClicks = allUrls.stream()
+                .mapToLong(url -> analyticsRepository.countByShortUrl(url))
+                .sum();
+
+        return OverallDashboardAnalyticsResponse.builder()
+                .totalUrls(totalUrls)
+                .totalClicks(totalClicks)
+                .uniqueClicks(analyticsRepository.countUniqueClicksByUser(userId))
+                .activeUrls(activeUrls)
+                .expiredUrls(expiredUrls)
+                .disabledUrls(disabledUrls)
+                .clicksPerDay(analyticsRepository.getDailyClicksByUser(userId))
+                .topIps(analyticsRepository.topIpsByUser(userId))
+                .topUserAgents(analyticsRepository.topUserAgentsByUser(userId))
+                .topPerformingUrls(analyticsRepository.getTopPerformingUrlsByUser(userId))
+                .recentClicks(
+                        analyticsRepository.findTop10RecentClicksByUser(userId)
                                 .stream()
                                 .map(a -> new RecentClick(
                                         a.getIpAddress(),
